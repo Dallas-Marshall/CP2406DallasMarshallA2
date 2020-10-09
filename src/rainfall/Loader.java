@@ -2,46 +2,65 @@ package rainfall;
 
 import textio.TextIO;
 
+import java.io.File;
+
 public class Loader {
-    private static final int INDEX_OF_YEAR = 2;
-    private static final int INDEX_OF_MONTH = 3;
-    private static final int INDEX_OF_DAY = 4;
-    private static final int INDEX_OF_RAINFALL_MEASUREMENT = 5;
 
     public static Station load(String directoryName, String stationName) throws LoaderException {
-        if (directoryName.equals("")) {
+        // Check valid input
+        if (directoryName.strip().equals("")) {
             throw new LoaderException("empty directory name");
-        } else if (stationName.equals("")) {
+        } else if (stationName.strip().equals("")) {
             throw new LoaderException("empty station name");
         }
 
-        // load analysed file
-        String pathToAnalysedFile = String.format("%s/%s_analysed.csv", directoryName, stationName);
-        try {
-            TextIO.readFile(pathToAnalysedFile);
-        } catch (IllegalArgumentException e) { // analysed file does not exist
+        // Create analysedCSVFile
+        String pathToAnalysedCSVFile = String.format("%s/%s_analysed.csv", directoryName, stationName);
+        File analysedCSVFile = new File(pathToAnalysedCSVFile);
 
-            // create analysed file
-            String pathToRainfallData = String.format("%s/%s.csv", directoryName, stationName);
+        if (!analysedCSVFile.exists()) {
+
+            // Create rawDataCSVFile
+            String pathToRawDataCSVFile = String.format("%s/%s.csv", directoryName, stationName);
+            File rawDataCSVFile = new File(pathToRawDataCSVFile);
+
+            if (!rawDataCSVFile.exists()) throw new LoaderException("rainfall file not found");
+
+            // Analyse rawDataCSVFile
+            TextIO.readFile(pathToRawDataCSVFile);
             try {
-                TextIO.readFile(pathToRainfallData);
-                initialiseOutFile(pathToRainfallData);
-                analyseDataset(pathToAnalysedFile);
+                initialiseOutFile(pathToRawDataCSVFile);
+                analyseDataset(pathToAnalysedCSVFile);
             } catch (AnalysisException error) { // error analysing raw data
                 throw new LoaderException(error.getMessage());
             }
-
-            TextIO.readFile((pathToAnalysedFile)); // load analysed file
         }
-        // TODO - return analysed file as station object
-        return null;
+        // load analysed file
+        TextIO.readFile((pathToAnalysedCSVFile));
+        Station station = loadStation();
+        if (station == null) throw new LoaderException("empty analysedCSVFile");
+        return station;
     } // end load
 
 
-    private static void analyseDataset(String pathToAnalysedFile) throws AnalysisException {
-        if (readNextLine() == null) throw new AnalysisException("Empty rainfall data file");
+    private static Station loadStation() {
+        return null; // TODO - Create Records and load into Station
+    } // end loadStation
 
-        TextIO.writeFile(pathToAnalysedFile);
+
+    private static void analyseDataset(String pathToAnalysedCSVFile) throws AnalysisException {
+        // Set index of values
+        final int INDEX_OF_YEAR = 2;
+        final int INDEX_OF_MONTH = 3;
+        final int INDEX_OF_DAY = 4;
+        final int INDEX_OF_RAINFALL_MEASUREMENT = 5;
+
+        // Check file is not empty
+        if (readNextLine() == null) throw new AnalysisException("empty rawDataCSVFile");
+
+        // Read file
+        TextIO.writeFile(pathToAnalysedCSVFile);
+
         // Set tracking variables with sentinel values
         double monthlyRainfallTotal = 0.0;
         double monthlyRainfallMin = Double.POSITIVE_INFINITY;
@@ -49,9 +68,10 @@ public class Loader {
         int currentMonth = 1;
         int currentYear = 0;
 
-        readNextLine(); // Remove header record
+        // Remove header record
+        readNextLine();
 
-        // get first raw rainfall data line
+        // Read first raw rainfall data line
         String[] rainfallRecord = readNextLine();
         while (rainfallRecord != null) {
 
@@ -61,14 +81,18 @@ public class Loader {
             }
 
             // Extract values
+            int day = Integer.parseInt(rainfallRecord[INDEX_OF_DAY]);
             int year = Integer.parseInt(rainfallRecord[INDEX_OF_YEAR]);
             int month = Integer.parseInt(rainfallRecord[INDEX_OF_MONTH]);
             double rainfallMeasurement = Double.parseDouble(rainfallRecord[INDEX_OF_RAINFALL_MEASUREMENT]);
 
+            // Update Sentinel Value
             if (currentYear == 0) currentYear = year;
 
-
-
+            // Check Valid values
+            if (day < 1 || day > 31) throw new AnalysisException("illegal day in rawDataCSVFile: " + day);
+            if (month < 1 || month > 12) throw new AnalysisException("illegal month in rawDataCSVFile: " + month);
+            if (year < 1 || year > 12) throw new AnalysisException("illegal year in rawDataCSVFile: " + year);
 
             if (month != currentMonth) {
                 // Print to file
@@ -89,6 +113,7 @@ public class Loader {
             if (rainfallMeasurement > monthlyRainfallMax) monthlyRainfallMax = rainfallMeasurement;
             if (rainfallMeasurement < monthlyRainfallMin) monthlyRainfallMin = rainfallMeasurement;
 
+            // Read next raw rainfall data line
             rainfallRecord = readNextLine();
         }
 
@@ -128,7 +153,8 @@ public class Loader {
     } // end initialiseOutFile
 
 
-    private static void printToFile(int year, int month, double rainfallTotal, double rainfallMin, double rainfallMax) {
+    private static void printToFile(int year, int month, double rainfallTotal, double rainfallMin,
+                                    double rainfallMax) {
         TextIO.putf("%d,%d,%1.2f,%1.2f,%1.2f\n", year, month, rainfallTotal, rainfallMin, rainfallMax);
     } // end printToFile
 
