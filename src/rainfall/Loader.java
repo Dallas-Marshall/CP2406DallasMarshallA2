@@ -55,11 +55,12 @@ public class Loader {
         final int INDEX_OF_DAY = 4;
         final int INDEX_OF_RAINFALL_MEASUREMENT = 5;
 
-        // Check file is not empty
+        // Check file is not empty and remove header
         if (readNextLine() == null) throw new AnalysisException("empty rawDataCSVFile");
 
-        // Read file
+        // Set write file and write header
         TextIO.writeFile(pathToAnalysedCSVFile);
+        TextIO.putln("year,month,total,min,max");
 
         // Set tracking variables with sentinel values
         double monthlyRainfallTotal = 0.0;
@@ -67,9 +68,6 @@ public class Loader {
         double monthlyRainfallMax = Double.NEGATIVE_INFINITY;
         int currentMonth = 1;
         int currentYear = 0;
-
-        // Remove header record
-        readNextLine();
 
         // Read first raw rainfall data line
         String[] rainfallRecord = readNextLine();
@@ -92,7 +90,7 @@ public class Loader {
             // Check Valid values
             if (day < 1 || day > 31) throw new AnalysisException("illegal day in rawDataCSVFile: " + day);
             if (month < 1 || month > 12) throw new AnalysisException("illegal month in rawDataCSVFile: " + month);
-            if (year < 1 || year > 12) throw new AnalysisException("illegal year in rawDataCSVFile: " + year);
+            if (year < 1000 || year > 9999) throw new AnalysisException("illegal year in rawDataCSVFile: " + year);
 
             if (month != currentMonth) {
                 // Print to file
@@ -149,12 +147,10 @@ public class Loader {
         String fileName = pathToRainfallData.substring(pathToRainfallData.lastIndexOf("/") + 1, pathToRainfallData.lastIndexOf("."));
         String pathToOutFile = String.format("resources/%s_analysed.csv", fileName);
         TextIO.writeFile(pathToOutFile);
-        TextIO.putln("year,month,total,min,max");
     } // end initialiseOutFile
 
 
-    private static void printToFile(int year, int month, double rainfallTotal, double rainfallMin,
-                                    double rainfallMax) {
+    private static void printToFile(int year, int month, double rainfallTotal, double rainfallMin, double rainfallMax) {
         TextIO.putf("%d,%d,%1.2f,%1.2f,%1.2f\n", year, month, rainfallTotal, rainfallMin, rainfallMax);
     } // end printToFile
 
