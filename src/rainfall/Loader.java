@@ -44,7 +44,35 @@ public class Loader {
 
 
     private static Station loadStation() {
-        return null; // TODO - Create Records and load into Station
+        // Set index of values
+        final int INDEX_OF_YEAR = 0;
+        final int INDEX_OF_MONTH = 1;
+        final int INDEX_OF_RAINFALL_TOTAL = 2;
+        final int INDEX_OF_RAINFALL_MIN = 3;
+        final int INDEX_OF_RAINFALL_MAX = 4;
+
+        // Check analysedCSVFile is not empty
+        if (readNextLine() == null) return null;
+
+        Station station = new Station();
+        // Read first line
+        String[] analysedRecord = readNextLine();
+        while (analysedRecord != null) {
+            // Convert values from strings
+            int year = Integer.parseInt(analysedRecord[INDEX_OF_YEAR]);
+            int month = Integer.parseInt(analysedRecord[INDEX_OF_MONTH]);
+            double rainfallTotal = Double.parseDouble(analysedRecord[INDEX_OF_RAINFALL_TOTAL]);
+            double rainfallMin = Double.parseDouble(analysedRecord[INDEX_OF_RAINFALL_MIN]);
+            double rainfallMax = Double.parseDouble(analysedRecord[INDEX_OF_RAINFALL_MAX]);
+
+            // Create Record and add to Station
+            Record record = new Record(year, month, rainfallTotal, rainfallMin, rainfallMax);
+            station.addRecord(record);
+
+            // Get next line
+            analysedRecord = readNextLine();
+        }
+        return station;
     } // end loadStation
 
 
