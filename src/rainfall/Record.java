@@ -11,7 +11,7 @@ public class Record {
     private final double max;
 
     /**
-     * Create a Record object and store values,
+     * Constructor. Create a Record object and store values,
      * all values must be checked valid by program calling the constructor.
      *
      * @param year  The year the rainfall data was recorded.

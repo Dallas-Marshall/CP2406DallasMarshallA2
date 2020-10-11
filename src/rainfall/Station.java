@@ -12,7 +12,7 @@ public class Station {
     private final ArrayList<Record> rainfallRecords;
 
     /**
-     * Create a Station object and initialise ArrayList.
+     * Constructor. Create a Station object and initialise ArrayList.
      */
     public Station() {
         rainfallRecords = new ArrayList<>();
