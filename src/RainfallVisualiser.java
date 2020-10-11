@@ -24,6 +24,8 @@ public class RainfallVisualiser extends Application {
     private TextField directoryNameInput;
     private TextField stationNameInput;
 
+    private int canvasWidth = 1000;
+    private int canvasHeight = 500;
     private GraphicsContext chartGraphicsContext;
     // Text area to display Station Record values.
     private Label statusLabel;
@@ -72,12 +74,12 @@ public class RainfallVisualiser extends Application {
         // TODO: add your UI control instance variables here
         Label directoryNameInputLabel = new Label("Directory Name:");
         directoryNameInputLabel.setPadding(labelInset); // Center label vertically with TextField
-        // directoryNameInput = new TextField("resources"); // Testing
-        directoryNameInput = new TextField();
+         directoryNameInput = new TextField("resources"); // Testing
+        // directoryNameInput = new TextField();
 
         Label stationNameInputLabel = new Label("Directory Name: ");
         stationNameInputLabel.setPadding(labelInset); // Center label vertically with TextField
-        // stationNameInput = new TextField("TinarooFallsStation"); // Testing
+        // stationNameInput = new TextField("CopperlodeDamStation"); // Testing
         stationNameInput = new TextField();
 
         Button openButton = new Button("Open");
@@ -93,8 +95,6 @@ public class RainfallVisualiser extends Application {
         HBox.setHgrow(openButton, Priority.ALWAYS);
 
         // Graph and data viewer
-        int canvasWidth = 1000;
-        int canvasHeight = 500;
         Canvas chartCanvas = new Canvas(canvasWidth, canvasHeight);
 
         // Fill canvas area
@@ -104,7 +104,8 @@ public class RainfallVisualiser extends Application {
 
         recordDisplay = new TextArea();
         recordDisplay.setPrefHeight(canvasHeight);
-        recordDisplay.setPrefWidth(canvasWidth / 3.0);
+        recordDisplay.setPrefWidth(canvasWidth / 2.5);
+        recordDisplay.setStyle("-fx-font-family: monospace;");
 
         viewerRow = new HBox(chartCanvas, recordDisplay);
         viewerRow.setSpacing(5);
@@ -119,6 +120,7 @@ public class RainfallVisualiser extends Application {
      * Method to handle open button being pressed.
      */
     private void handleOpen() {
+        resetDisplays();
         String directoryName = directoryNameInput.getText().strip();
         String stationName = stationNameInput.getText().strip();
         try {
@@ -144,13 +146,22 @@ public class RainfallVisualiser extends Application {
     } // end handleOpen
 
     /**
+     * Helper method to reset chartCanvas and recordDisplay to initial blank state.
+     */
+    private void resetDisplays() {
+        chartGraphicsContext.setFill(Color.WHITE);
+        chartGraphicsContext.fillRect(0, 0, canvasWidth, canvasHeight);
+        recordDisplay.setText("");
+    } // end resetDisplays
+
+    /**
      * Helper method to format a Record object ready to be displayed in recordDisplay.
      *
      * @param record The Record object being formatted.
      * @return String readable representation of Record object.
      */
     private String formatRecord(Record record) {
-        return String.format("%s/%s - Total: %1.2f, Min: %1.2f, Max: %1.2f\n", record.getYear(), record.getMonth(),
+        return String.format("%s/%-2s - Total: %-7.2f Min: %-5.2f Max: %-6.2f\n", record.getYear(), record.getMonth(),
                 record.getTotal(), record.getMin(), record.getMax());
     } // end formatRecord
 
