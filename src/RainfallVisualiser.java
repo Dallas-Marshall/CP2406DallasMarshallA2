@@ -11,10 +11,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import rainfall.Loader;
 import rainfall.Record;
 import rainfall.Station;
+
+import java.util.List;
 
 /**
  * Class to represent a RainfallVisualiser GUI.
@@ -24,8 +28,8 @@ public class RainfallVisualiser extends Application {
     private TextField directoryNameInput;
     private TextField stationNameInput;
 
-    private int canvasWidth = 1000;
-    private int canvasHeight = 500;
+    private final int canvasWidth = 1250;
+    private final int canvasHeight = 500;
     private GraphicsContext chartGraphicsContext;
     // Text area to display Station Record values.
     private Label statusLabel;
@@ -54,8 +58,10 @@ public class RainfallVisualiser extends Application {
         BorderPane.setMargin(dataSelectionBar, rootInset);
         BorderPane.setMargin(viewerRow, rootInset);
         BorderPane.setMargin(statusRow, rootInset);
-
         root.setStyle("-fx-background-color: Tan");
+
+        // Set blank display
+        resetDisplays();
 
         // Setup window
         Scene scene = new Scene(root);
@@ -74,13 +80,13 @@ public class RainfallVisualiser extends Application {
         // TODO: add your UI control instance variables here
         Label directoryNameInputLabel = new Label("Directory Name:");
         directoryNameInputLabel.setPadding(labelInset); // Center label vertically with TextField
-         directoryNameInput = new TextField("resources"); // Testing
+        directoryNameInput = new TextField("resources"); // Testing
         // directoryNameInput = new TextField();
 
         Label stationNameInputLabel = new Label("Directory Name: ");
         stationNameInputLabel.setPadding(labelInset); // Center label vertically with TextField
-        // stationNameInput = new TextField("CopperlodeDamStation"); // Testing
-        stationNameInput = new TextField();
+        stationNameInput = new TextField("CopperlodeDamStation"); // Testing
+        // stationNameInput = new TextField();
 
         Button openButton = new Button("Open");
         openButton.setPrefWidth(125);
@@ -104,7 +110,7 @@ public class RainfallVisualiser extends Application {
 
         recordDisplay = new TextArea();
         recordDisplay.setPrefHeight(canvasHeight);
-        recordDisplay.setPrefWidth(canvasWidth / 2.5);
+        recordDisplay.setPrefWidth(canvasWidth / 3.25);
         recordDisplay.setStyle("-fx-font-family: monospace;");
 
         viewerRow = new HBox(chartCanvas, recordDisplay);
@@ -123,10 +129,12 @@ public class RainfallVisualiser extends Application {
         resetDisplays();
         String directoryName = directoryNameInput.getText().strip();
         String stationName = stationNameInput.getText().strip();
+
+        // Label station
         try {
             // Station object to hold Records.
             Station station = Loader.load(directoryName, stationName);
-            for (int i = 0; i < station.numberOfRecords(); i++) {
+            for (int i = 0; i < station.getNumberOfRecords(); i++) {
                 String currentDisplay = recordDisplay.getText();
 
                 // First record just display to avoid blank line
@@ -135,9 +143,10 @@ public class RainfallVisualiser extends Application {
 
                 // Display blank line in between years
                 if (station.getRecord(i).getMonth() == 12) recordDisplay.setText(recordDisplay.getText() + "\n");
-
-                // TODO - Draw graph
             }
+
+            // Display bar graph
+            draw(station);
             statusLabel.setText("Status: Loaded");
         } catch (
                 Loader.LoaderException e) { // Display error to Status Bar
@@ -146,12 +155,85 @@ public class RainfallVisualiser extends Application {
     } // end handleOpen
 
     /**
+     * Method to draw the bar graph of Station object rainfall Totals,
+     * Auto Scales data to fit to axes.
+     *
+     * @param station Station object to be graphed.
+     */
+    private void draw(Station station) {
+        int X_AXIS_Y_VALUE = canvasHeight - 40; // Distance from bottom of chartCanvas
+        int Y_AXIS_HEIGHT = X_AXIS_Y_VALUE - 25; // Height from x-axis to top of y-axis
+        int X_AXIS_LABEL_Y_VALUE = X_AXIS_Y_VALUE + 10;
+
+        double HIGHEST_RAINFALL_VALUE = station.getMaxRainfallValue();
+        double SCALE_FACTOR = Y_AXIS_HEIGHT / HIGHEST_RAINFALL_VALUE;
+
+        int STARTING_X_VALUE = 100;
+        int NUMBER_OF_RECORDS = station.getNumberOfRecords();
+        double X_AXIS_WIDTH = canvasWidth - 30 - STARTING_X_VALUE;
+        double COLUMN_WIDTH = (X_AXIS_WIDTH / NUMBER_OF_RECORDS);
+
+        int yearsGraphed = 0;
+        double currentValueX = STARTING_X_VALUE; // start graphing inside axis
+        int lastYearLabelled = station.getRecord(0).getYear();
+        chartGraphicsContext.setFont(Font.font("Calibri", 10));
+        for (int i = 0; i < NUMBER_OF_RECORDS; i++) {
+            Record record = station.getRecord(i);
+
+
+            // Scale rainfallTotal to fit on axes
+            double scaledMonthlyRainfall = record.getTotal() * SCALE_FACTOR;
+
+            // alternate bar colours per year
+            if (record.getYear() % 2 == 0) {
+                chartGraphicsContext.setFill(Color.TAN);
+            } else {
+                chartGraphicsContext.setFill(Color.BLUE);
+            }
+            if (record.getMonth() == 1) {
+                if (record.getYear() - lastYearLabelled == 5 || i == 0) {
+                    chartGraphicsContext.strokeText("| " + record.getYear(), currentValueX, X_AXIS_LABEL_Y_VALUE, 50);
+                    lastYearLabelled = record.getYear();
+                }
+            }
+
+            // Draw column
+            double adjustedYValue = X_AXIS_Y_VALUE - scaledMonthlyRainfall; // Find top coord of column
+            chartGraphicsContext.fillRect(currentValueX, adjustedYValue, COLUMN_WIDTH, scaledMonthlyRainfall);
+
+            // Move x across for new column
+            currentValueX += COLUMN_WIDTH;
+        }
+
+        // TODO - Label Y-Axis
+    } // end draw
+
+    private void drawAxis(int STARTING_X_VALUE, int X_AXIS_Y_VALUE) {
+        chartGraphicsContext.setFont(Font.font("Calibri", 10));
+        chartGraphicsContext.setStroke(Color.BLACK);
+
+        chartGraphicsContext.strokeLine(STARTING_X_VALUE, X_AXIS_Y_VALUE, canvasWidth - 25, X_AXIS_Y_VALUE);
+        chartGraphicsContext.strokeLine(STARTING_X_VALUE, X_AXIS_Y_VALUE, STARTING_X_VALUE, 25);
+
+        chartGraphicsContext.strokeText("Year", (canvasWidth / 2.0), canvasHeight - 10, 50);
+        chartGraphicsContext.strokeText("Rainfall (mm)", 10, (canvasHeight / 2.0), 75);
+
+        chartGraphicsContext.setFont(Font.font("Calibri", 12));
+        chartGraphicsContext.strokeText("Monthly Rainfall Totals per Year", (canvasWidth / 2.0 - 30), 10, 200);
+    }
+
+    /**
      * Helper method to reset chartCanvas and recordDisplay to initial blank state.
      */
     private void resetDisplays() {
+        int X_AXIS_Y_VALUE = canvasHeight - 40;
+        int STARTING_X_VALUE = 100;
+
         chartGraphicsContext.setFill(Color.WHITE);
         chartGraphicsContext.fillRect(0, 0, canvasWidth, canvasHeight);
         recordDisplay.setText("");
+        // draw and label x and y axis
+        drawAxis(STARTING_X_VALUE, X_AXIS_Y_VALUE);
     } // end resetDisplays
 
     /**
