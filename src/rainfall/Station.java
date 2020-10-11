@@ -61,10 +61,25 @@ public class Station {
     } // end getRecord
 
     /**
-     * @return Number of Records for Station.
+     * Method finds the number of Records in Station object.
+     *
+     * @return Number of Records in Station object.
      */
-    public int numberOfRecords() {
+    public int getNumberOfRecords() {
         return rainfallRecords.size();
     } // end numberOfRecords
+
+    /**
+     * Method finds the highest monthly rainfall from Station object.
+     *
+     * @return The highest monthly rainfall value.
+     */
+    public double getMaxRainfallValue() {
+        double maxRainfall = Double.NEGATIVE_INFINITY;
+        for (Record record : rainfallRecords) {
+            if (record.getTotal() > maxRainfall) maxRainfall = record.getTotal();
+        }
+        return maxRainfall;
+    } // end getMaxRainfallValue
 
 } // end class Station
