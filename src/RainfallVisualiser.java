@@ -12,13 +12,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import rainfall.Loader;
 import rainfall.Record;
 import rainfall.Station;
-
-import java.util.List;
 
 /**
  * Class to represent a RainfallVisualiser GUI.
@@ -107,6 +105,7 @@ public class RainfallVisualiser extends Application {
         chartGraphicsContext = chartCanvas.getGraphicsContext2D();
         chartGraphicsContext.setFill(Color.WHITE);
         chartGraphicsContext.fillRect(0, 0, canvasWidth, canvasHeight);
+        chartGraphicsContext.setFont(Font.font("Calibri", 10));
 
         recordDisplay = new TextArea();
         recordDisplay.setPrefHeight(canvasHeight);
@@ -161,28 +160,29 @@ public class RainfallVisualiser extends Application {
      * @param station Station object to be graphed.
      */
     private void draw(Station station) {
+        double HIGHEST_RAINFALL_VALUE = station.getMaxRainfallValue();
+        int NUMBER_OF_RECORDS = station.getNumberOfRecords();
+
         int X_AXIS_Y_VALUE = canvasHeight - 40; // Distance from bottom of chartCanvas
         int Y_AXIS_HEIGHT = X_AXIS_Y_VALUE - 25; // Height from x-axis to top of y-axis
-        int X_AXIS_LABEL_Y_VALUE = X_AXIS_Y_VALUE + 10;
+        int X_AXIS_LABEL_Y_VALUE = X_AXIS_Y_VALUE + 10; // Height of x-axis labels
 
-        double HIGHEST_RAINFALL_VALUE = station.getMaxRainfallValue();
-        double SCALE_FACTOR = Y_AXIS_HEIGHT / HIGHEST_RAINFALL_VALUE;
+        int Y_AXIS_LABEL_SPACING = (int) Y_AXIS_HEIGHT / 10; // Value to space each y-axis label
+        int Y_AXIS_LABEL_VALUE_INTERVAL = (int) HIGHEST_RAINFALL_VALUE / 10; // Value to increment each y-axis label
 
-        int STARTING_X_VALUE = 100;
-        int NUMBER_OF_RECORDS = station.getNumberOfRecords();
+        double SCALE_FACTOR = Y_AXIS_HEIGHT / HIGHEST_RAINFALL_VALUE; // Factor to scale down monthlyRainfall to fit to graph
+        int STARTING_X_VALUE = 100; // The x value that the chart axes starts from.
+
         double X_AXIS_WIDTH = canvasWidth - 30 - STARTING_X_VALUE;
         double COLUMN_WIDTH = (X_AXIS_WIDTH / NUMBER_OF_RECORDS);
 
-        int yearsGraphed = 0;
         double currentValueX = STARTING_X_VALUE; // start graphing inside axis
         int lastYearLabelled = station.getRecord(0).getYear();
-        chartGraphicsContext.setFont(Font.font("Calibri", 10));
+
+        // Graph Columns
         for (int i = 0; i < NUMBER_OF_RECORDS; i++) {
             Record record = station.getRecord(i);
-
-
-            // Scale rainfallTotal to fit on axes
-            double scaledMonthlyRainfall = record.getTotal() * SCALE_FACTOR;
+            double scaledMonthlyRainfall = record.getTotal() * SCALE_FACTOR; // Scale rainfallTotal to fit on axes
 
             // alternate bar colours per year
             if (record.getYear() % 2 == 0) {
@@ -190,8 +190,10 @@ public class RainfallVisualiser extends Application {
             } else {
                 chartGraphicsContext.setFill(Color.BLUE);
             }
+
+            // Label x-axis
             if (record.getMonth() == 1) {
-                if (record.getYear() - lastYearLabelled == 5 || i == 0) {
+                if (record.getYear() - lastYearLabelled == 5 || i == 0) { // Label first and then every 5 years
                     chartGraphicsContext.strokeText("| " + record.getYear(), currentValueX, X_AXIS_LABEL_Y_VALUE, 50);
                     lastYearLabelled = record.getYear();
                 }
@@ -201,13 +203,30 @@ public class RainfallVisualiser extends Application {
             double adjustedYValue = X_AXIS_Y_VALUE - scaledMonthlyRainfall; // Find top coord of column
             chartGraphicsContext.fillRect(currentValueX, adjustedYValue, COLUMN_WIDTH, scaledMonthlyRainfall);
 
-            // Move x across for new column
-            currentValueX += COLUMN_WIDTH;
+            currentValueX += COLUMN_WIDTH; // Move x across for new column
         }
 
-        // TODO - Label Y-Axis
+        // Label y-axis
+        for (int i = 0; i <= 10; i++) {
+            // Calculate Label details
+            int rainfallLabelValue = Y_AXIS_LABEL_VALUE_INTERVAL * i;
+            int rainfallLabelYValue = Y_AXIS_LABEL_SPACING * i;
+            // Create and measure label width
+            Text rainfallLabel = new Text(String.format("%4d -", rainfallLabelValue));
+            rainfallLabel.setFont(rainfallLabel.getFont());
+            double textWidth = rainfallLabel.getBoundsInLocal().getWidth();
+            // Adjust label start value
+            double rainfallLabelXValue = STARTING_X_VALUE - textWidth;
+            chartGraphicsContext.strokeText(String.format("%4d -", rainfallLabelValue), rainfallLabelXValue, X_AXIS_Y_VALUE - rainfallLabelYValue, textWidth);
+        }
     } // end draw
 
+    /**
+     * Helper method to draw and label x and y axes as well as setting the chart title.
+     *
+     * @param STARTING_X_VALUE The x value that the chart axes starts from.
+     * @param X_AXIS_Y_VALUE   The y value that the x axis sits at.
+     */
     private void drawAxis(int STARTING_X_VALUE, int X_AXIS_Y_VALUE) {
         chartGraphicsContext.setFont(Font.font("Calibri", 10));
         chartGraphicsContext.setStroke(Color.BLACK);
