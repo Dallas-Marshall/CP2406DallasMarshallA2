@@ -18,9 +18,6 @@ import rainfall.Loader;
 import rainfall.Record;
 import rainfall.Station;
 
-/**
- * Class to represent a RainfallVisualiser GUI.
- */
 public class RainfallVisualiser extends Application {
 
     private TextField directoryNameInput;
@@ -38,9 +35,6 @@ public class RainfallVisualiser extends Application {
     private HBox viewerRow;
     private HBox statusRow;
 
-    /**
-     * Method to setup and display RainfallVisualiser GUI.
-     */
     @Override
     public void start(Stage stage) {
         generateNodes();
@@ -69,20 +63,17 @@ public class RainfallVisualiser extends Application {
         stage.show();
     } // end start
 
-    /**
-     * Helper method to initialise and style nodes to be displayed in BorderPane.
-     */
     private void generateNodes() {
         // Data selection Bar
         Insets labelInset = new Insets(3, 0, 0, 0);
         // TODO: add your UI control instance variables here
         Label directoryNameInputLabel = new Label("Directory Name:");
         directoryNameInputLabel.setPadding(labelInset); // Center label vertically with TextField
-         directoryNameInput = new TextField();
+        directoryNameInput = new TextField();
 
         Label stationNameInputLabel = new Label("Directory Name: ");
         stationNameInputLabel.setPadding(labelInset); // Center label vertically with TextField
-         stationNameInput = new TextField();
+        stationNameInput = new TextField();
 
         Button openButton = new Button("Open");
         openButton.setPrefWidth(125);
@@ -119,9 +110,6 @@ public class RainfallVisualiser extends Application {
         statusLabel.setMaxHeight(8);
     } // end generateNodes
 
-    /**
-     * Method to handle open button being pressed.
-     */
     private void handleOpen() {
         resetDisplays();
         String directoryName = directoryNameInput.getText().strip();
@@ -151,12 +139,6 @@ public class RainfallVisualiser extends Application {
         }
     } // end handleOpen
 
-    /**
-     * Method to draw the bar graph of Station object rainfall Totals,
-     * Auto Scales data to fit to axes.
-     *
-     * @param station Station object to be graphed.
-     */
     private void draw(Station station) {
         // Calculate graphing Variables
         double HIGHEST_RAINFALL_VALUE = station.getMaxRainfallValue();
@@ -178,14 +160,6 @@ public class RainfallVisualiser extends Application {
         labelYAxis(X_AXIS_Y_VALUE, Y_AXIS_LABEL_SPACING, Y_AXIS_LABEL_VALUE_INTERVAL, STARTING_X_VALUE);
     } // end draw
 
-    /**
-     * Helper method to label y-axis of graph from graphStationRecords.
-     *
-     * @param x_AXIS_Y_VALUE              The y-value of x-axis.
-     * @param y_AXIS_LABEL_SPACING        The value to space each y-axis label
-     * @param y_AXIS_LABEL_VALUE_INTERVAL The value to space each y-axis label
-     * @param STARTING_X_VALUE            The x value that the chart axes starts from.
-     */
     private void labelYAxis(int x_AXIS_Y_VALUE, int y_AXIS_LABEL_SPACING, int y_AXIS_LABEL_VALUE_INTERVAL, int STARTING_X_VALUE) {
         for (int i = 0; i <= 10; i++) {
             // Calculate Label details
@@ -199,17 +173,8 @@ public class RainfallVisualiser extends Application {
             double rainfallLabelXValue = STARTING_X_VALUE - textWidth;
             chartGraphicsContext.strokeText(String.format("%4d -", rainfallLabelValue), rainfallLabelXValue, x_AXIS_Y_VALUE - rainfallLabelYValue, textWidth);
         }
-    }
+    } // end labelYAxis
 
-    /**
-     * Helper method to graph Record objects from Station object.
-     *
-     * @param station              The Station object containing Record's to be graphed.
-     * @param x_AXIS_Y_VALUE       The y-value of x-axis.
-     * @param x_AXIS_LABEL_Y_VALUE The y-value of x-axis Labels.
-     * @param SCALE_FACTOR         The factor to scale down monthlyRainfall to fit to graph.
-     * @param STARTING_X_VALUE     The x value that the chart axes starts from.
-     */
     private void graphStationRecords(Station station, int x_AXIS_Y_VALUE, int x_AXIS_LABEL_Y_VALUE, double SCALE_FACTOR, int STARTING_X_VALUE) {
         int NUMBER_OF_RECORDS = station.getNumberOfRecords();
         double X_AXIS_WIDTH = canvasWidth - 30 - STARTING_X_VALUE;
@@ -245,12 +210,6 @@ public class RainfallVisualiser extends Application {
         }
     } // end graphRainfall
 
-    /**
-     * Helper method to draw and label x and y axes as well as setting the chart title.
-     *
-     * @param STARTING_X_VALUE The x value that the chart axes starts from.
-     * @param X_AXIS_Y_VALUE   The y value that the x axis sits at.
-     */
     private void drawAxis(int STARTING_X_VALUE, int X_AXIS_Y_VALUE) {
         chartGraphicsContext.setFont(Font.font("Calibri", 10));
         chartGraphicsContext.setStroke(Color.BLACK);
@@ -263,11 +222,8 @@ public class RainfallVisualiser extends Application {
 
         chartGraphicsContext.setFont(Font.font("Calibri", 12));
         chartGraphicsContext.strokeText("Monthly Rainfall Totals per Year", (canvasWidth / 2.0 - 30), 10, 200);
-    }
+    } // end drawAxis
 
-    /**
-     * Helper method to reset chartCanvas and recordDisplay to initial blank state.
-     */
     private void resetDisplays() {
         int X_AXIS_Y_VALUE = canvasHeight - 40;
         int STARTING_X_VALUE = 100;
@@ -279,23 +235,12 @@ public class RainfallVisualiser extends Application {
         drawAxis(STARTING_X_VALUE, X_AXIS_Y_VALUE);
     } // end resetDisplays
 
-    /**
-     * Helper method to format a Record object ready to be displayed in recordDisplay.
-     *
-     * @param record The Record object being formatted.
-     * @return String readable representation of Record object.
-     */
     private String formatRecord(Record record) {
         return String.format("%s/%-2s - Total: %-7.2f Min: %-5.2f Max: %-6.2f\n", record.getYear(), record.getMonth(),
                 record.getTotal(), record.getMin(), record.getMax());
     } // end formatRecord
 
-    /**
-     * Helper method to launch the JavaFX application.
-     *
-     * @param args Arguments passed by command line.
-     */
     public static void main(String[] args) {
         launch();
     } // end main
-}
+} // end main
