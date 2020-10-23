@@ -197,7 +197,7 @@ public class RainfallVisualiser extends Application {
             // Label x-axis
             if (record.getMonth() == 1) {
                 if (record.getYear() - lastYearLabelled == 5 || i == 0) { // Label first and then every 5 years
-                    chartGraphicsContext.strokeText("| " + record.getYear(), currentValueX, x_AXIS_LABEL_Y_VALUE, 50);
+                    chartGraphicsContext.strokeText("| " + record.getYear(), currentValueX - 3, x_AXIS_LABEL_Y_VALUE, 50);
                     lastYearLabelled = record.getYear();
                 }
             }
