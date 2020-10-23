@@ -1,6 +1,6 @@
 package rainfall;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * An object of class Station represents monthly rainfall data of a station,
@@ -8,8 +8,7 @@ import java.util.ArrayList;
  */
 public class Station {
 
-    // ArrayList to store Records
-    private final ArrayList<Record> rainfallRecords;
+    private final List<Record> rainfallRecords; // List to store Records
 
     /**
      * Constructor. Create a Station object and initialise ArrayList.
