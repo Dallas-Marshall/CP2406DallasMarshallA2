@@ -1,6 +1,7 @@
 package rainfall;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An object of class Station represents monthly rainfall data of a station,
